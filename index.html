@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="styles/style.css"/>
+  <title>Image editor</title>
+</head>
+<body>
+  <h3>
+    Image editor
+  </h3>
+  
+  <style>
+  canvas
+  {
+    touch-action:auto;
+    border: 2px solid;
+  }
+  canvas
+ 
+  {
+/**  width: 250px;**/
+  /**  height: 450px;**/
+  }
+  </style>
+  
+  <img id="Imgs" src="" style="width:300px; height: 300px; border 2px solid;"></img>
+  <canvas class="K2" id="pad" ontouchstart="showcoord2(event); color(event);" ontouchmove="showcoord2(event); "  ontouchstart="color(event);" style=""></canvas>
+
+ <canvas class="K1" ontouchstart="showcoord2(event); color(event);" ontouchmove="showcoord2(event); color(event);"  id="pad" ontouchmove="color(event);" ></canvas>
+ 
+  <canvas id="canvas" ontouchstart="showcoord(event); color(event);" ontouchmove="showcoord(event); color(event);" ontouchstart="color(event);" style=""></canvas>
+  
+  <div id="coords"></div>
+  <br>
+   <div id="coords2"></div>
+  
+  <script>
+  
+  let ACC = 3.48477;
+  
+  let LS= false;
+  
+  let next = 0; 
+    
+  function RGB()
+  {
+    return Math.floor(Math.random() * 255);
+  }
+  
+  
+  
+  function RANDC()
+  {
+    //console.log(RGB());
+    let VR = RGB();
+    let VG = RGB();
+    let VB = RGB();
+    var cr = 'rgb('+
+    VR+','+
+    VG+','+
+    VB+')';
+    return cr;
+  }
+  
+  let analize = false;
+      let image_path = [];
+  let image_x = [];
+  let image_y = [];
+  
+  let SX = [];
+  let SZ = [];
+  
+  
+  let CX = [];
+  let CZ = [];
+  
+  
+  let COLR = [];
+  let COLG = [];
+  let COLB = [];
+  let COLA = [];
+  
+  let COLX = [];
+  let COLZ = [];
+  
+  let PSX = [];
+  let PSZ = [];
+  
+  
+  let selected = "";
+  let indice = 0;
+  
+  let WX = 0;
+  let WY = 0;
+    const canvas = document.getElementById('canvas');
+
+      const ctx2 = document.getElementById("pad").getContext('2d');
+ // ctx2.fillStyle="red";
+ // ctx2.fillRect(0,0,600,600);
+  ctx2.width = 1200;
+  ctx2.height = 1200;
+  
+      let   sCOLX = [];
+let sCOLZ = [];
+let sCOLR = [];
+let sCOLG = [];
+let sCOLL = [];
+let sCOLA = [];
+let sPSX = [];
+let sPSZ = [];
+   for (let i=0;i<ctx2.width;i++)
+     {
+       for (let k=0;k<ctx2.height;k++)
+     {
+       ctx2.fillStyle = RANDC() ;
+       ctx2.fillRect(i, k, 1,1);
+     }
+     }
+     
+  function erase()
+  {
+    if (COLX.length > 5)
+    {
+      
+      saved = [];
+    for (let i = 0;i  < document.getElementById("erase").value;i++)
+      
+      {
+        
+           sCOLX.push(COLX[COLX.length - 1]);
+ //sCOLL.push(COLL[COLL.length - 1]);
+ sCOLR.push(COLR[COLR.length - 1]);
+ sCOLG.push(COLG[COLG.length - 1]);
+// sCOL.push(COLL[COLL.length - 1]);
+ sCOLA.push(COLA[COLA.length - 1]);
+ sPSX.push(PSX[PSX.length - 1]);
+        sPSZ.push(PSZ[PSZ.length - 1]);
+        
+        
+        COLX.pop();
+COLZ.pop();
+COLR.pop();
+COLG.pop();
+COLB.pop();
+COLA.pop();
+PSX.pop();
+        PSZ.pop();
+        
+      }
+      
+    }
+    
+    else
+    {
+      
+                 sCOLX.push(COLX[COLX.length - 1]);
+ //sCOLL.push(COLL[COLL.length - 1]);
+ sCOLR.push(COLR[COLR.length - 1]);
+ sCOLG.push(COLG[COLG.length - 1]);
+// sCOL.push(COLL[COLL.length - 1]);
+ sCOLA.push(COLA[COLA.length - 1]);
+ sPSX.push(PSX[PSX.length - 1]);
+        sPSZ.push(PSZ[PSZ.length - 1]);
+        
+              COLX.pop();
+COLZ.pop();
+COLR.pop();
+COLG.pop();
+COLB.pop();
+COLA.pop();
+      PSX.pop();
+      PSZ.pop()
+    }
+    K();
+  }
+  
+  
+  function has_color_at(A)
+  {
+    let R = false;
+    for (let i =0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLZ.length;k++)
+      {
+        let Y =  0.0 + COLX[i] * COLZ[k];
+        if (A == Math.floor(Y))
+        {
+          R = true;
+        }
+      }
+      
+      }
+      
+        return R;
+  }
+  
+  function get_r_xz(A)
+  {
+        let R = 0;
+    for (let i =0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLZ.length;k++)
+      {
+        let Y = 0.0 + COLX[i] * COLZ[k];
+        if (A == Math.floor(Y))
+        {
+          R = COLR[Math.floor(Y)];
+        }
+      }
+      
+      }
+      
+        return R;
+  }
+  
+    function get_g_xz(A)
+  {
+        let R = 0;
+    for (let i =0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLZ.length;k++)
+      {
+        let Y =  0.0;
+        Y = Y + COLX[i] * COLZ[k] + 0.0;
+      if (A == Math.floor(Y))
+        {
+          R = COLG[Math.floor(Y)];
+        }
+      }
+      
+      }
+      
+        return R;
+  }
+  
+  function showcoord(event)
+  {
+    let canvas2 = document.getElementById("canvas");
+    const rect = canvas2.getBoundingClientRect();
+
+    let x = (event.touches[0].clientX - rect.left) * ACC;//></COLZ.length;k++)>
+    let y = (event.touches[0].clientY - rect.top) * ACC;
+    
+    
+    document.getElementById("coords").innerText = "coords " + x + " " + y;
+  }
+     
+     
+     function showcoord2(event)
+  {
+    let canvas2 = document.getElementById("pad");
+    const rect = canvas2.getBoundingClientRect();
+
+    let x = (event.touches[0].clientX - rect.left) * ACC;//></COLZ.length;k++)>
+    let y = (event.touches[0].clientY - rect.top) * ACC;
+    
+    
+    document.getElementById("coords2").innerText = "coords2 " + x + " " + y;
+  }
+     
+     
+    function get_b_xz(A)
+  {
+        let R = 0;
+    for (let i =0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLZ.length;k++)
+      {
+        let Y =  0.0;
+        Y = Y + COLX[i] * COLZ[k] + 0.0;
+        if (A == Math.floor(Y))
+        {
+          R = COLB[Math.floor(Y)];
+        }
+      }
+      
+      }
+      
+        return R;
+  }
+  
+    function get_alpha_xz(A)
+  {
+        let R = 0;
+    for (let i =0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLZ.length;k++)
+      {
+        let Y =  0.0;
+        Y = Y + COLX[i] * COLZ[k] + 0.0;
+        //console.log(A + " == " + Math.floor(Y) + " " + COLX[i] + " " + COLZ[k]);
+        
+        if (A == Math.floor(Y))
+        {
+          R = COLA[Y];
+        }
+      }
+      
+      }
+      
+        return R;
+  }
+  
+  
+  
+  function getR(i1,k1)
+  {
+    let R = 0;
+    for (let i=0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLX.length;k++)
+      {
+        if (i1 == i && k == k1)
+        {
+          R = COLR[i];
+        }
+      }
+      }
+      return R;
+  }
+  
+  
+  
+  function getG(i1,k1)
+  {
+    let R = 0;
+    for (let i=0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLX.length;k++)
+      {
+        if (i1 == i && k == k1)
+        {
+          R = COLG[i];
+        }
+      }
+      }
+      return R;
+  }
+  
+  function getB(i1,k1)
+  {
+    let R = 0;
+    for (let i=0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLX.length;k++)
+      {
+        if (i1 == i && k == k1)
+        {
+          R = COLB[i];
+        }
+      }
+      }
+      return R;
+  }
+  
+  function getA(i1,k1)
+  {
+    let R = 0;
+    for (let i=0;i<COLX.length;i++)
+      {
+        for (let k=0;k<COLX.length;k++)
+      {
+        if (i1 == i && k == k1)
+        {
+          R = COLA[i];
+        }
+      }
+      }
+      return R;
+  }
+  
+    function setPixel(imageData, x, y, r, g, b, a) {
+      const index = (x + y * imageData.width) * 4;
+      imageData.data[index] = r;
+      imageData.data[index + 1] = g;
+      imageData.data[index + 2] = b;
+      imageData.data[index + 3] = a;
+    }
+  
+    function loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => 
+        {
+         // console.log(img.data);
+    resolve(img);
+          
+        }
+        
+        img.onerror = () => {
+         // alert("DELETE LAYER INVALID PIC");
+          reject(new Error(`Failed to load image at ${url}`));
+        }
+        img.src = url;
+      });
+    }
+  
+      async function drawImageAsync(ctx, url, x, y, YSX, YSZ, Cx ,Cz) {
+      /**  ctx.msImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
+
+      **/  
+      try {
+        const image = await loadImage(url);
+    /**    
+        console.log(image.data);
+        
+        canvas.width = image.width;
+  canvas.height = image.height;
+        
+        
+     **/    
+        
+        ctx.drawImage(image, x, y, YSX, YSZ, 0,0, Cx, Cz);
+   
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+
+  for (let i = 0; i < data.length; i += 4) {
+  /**  data[i] = 255 - data[i];     // Red
+    data[i + 1] = 255 - data[i + 1]; // Green
+    data[i + 2] = 255 - data[i + 2]; 
+    **/
+    // x * z
+    if (true) // (has_color_at(i) == false)
+    {
+    data[i] = data[i];     // Red
+    data[i + 1] = data[i + 1]; // Green
+    data[i + 2] = data[i + 2]; // Blue
+      data[i + 3] = data[i + 3];
+      //onsole.log("#+( ", data[i + 3]);
+    }
+    else 
+    {
+      if (true)
+      {
+        //console.log("hd " + i/4 + " 3!$");
+      let R = get_r_xz(i/4);
+      let G = get_g_xz(i/4);
+      let B = get_b_xz(i/4);
+      let ALPHA = get_alpha_xz(i/4);
+        
+     // console.log("at " + i + " " + R + " G " + G + " B " + B + " ALPHA " + ALPHA)  ;
+       // console.log(R+"/"+G);
+          data[i] = R;     // Red
+          data[i + 1] = G; // Green
+          data[i + 2] = B; // Blue
+          data[i + 3] = ALPHA;
+   //   console.log("At " + i + " | " + + " ");
+      }
+        
+    }
+    
+
+    
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+//ctx2.putImageData(imageData, 0, 0);
+    
+        for (let i = 0;i < COLX.length;i++)
+      {
+                for (let k = 0;k < COLZ.length;k++)
+      {
+        //ctx.putImageData(imageData, i, k);
+      //  setPixel(imageData, COLX[i], COLZ[k], getR(i, k), getG(i, k), getB(i, k), getA(i,k));
+        //onsole.log(i + " & " + k); 
+      }
+      }
+
+                    console.log("XS " + COLX + " " + COLZ);
+    
+          
+   } catch (error) {
+        console.error("Error drawing image:", error);
+      }
+        
+        
+               
+                  for (let i = 0;i < COLX.length;i++)
+      {
+                //for (let k = 0;k < COLZ.length;k++)
+      {
+        //ctx.putImageData(imageData, i, k);
+       // setPixel(imageData, COLX[i], COLZ[k], getR(i, k), getG(i, k), getB(i, k), getA(i,k));
+        
+        console.log(COLR[i] + " + " + COLG[i] + " + " + COLB[i]); 
+                   var cr = 'rgb('+
+    COLR[i]+','+
+    COLG[i]+','+
+    COLB[i]+')';
+        
+        ctx.fillStyle = cr;// "rgb(" + COLR[i] + ", " +  COLG[i] + ", " + COLB[i] + ");";
+        
+        ctx.fillRect(COLX[i], COLZ[i], PSX[i], PSZ[i]);
+        console.log("WARN " + COLX[i] + " " + COLZ[i]);
+        
+          }
+      }
+                    
+    }
+
+ 
+
+    const ctx = canvas.getContext('2d');
+   
+  let CAN = document.getElementById("canvas");
+   
+  
+       //   ctx.fillStyle = 'blue';
+       // ctx.fillRect(30,0, 30, 30);
+       
+  
+  function K()
+  {
+    
+    ACC = document.getElementById("pencil_precission").value;
+   // let images = [];
+    document.getElementById("imgs").innerText = "";
+  CAN.width = document.getElementById("SICX").value;
+    CAN.height = document.getElementById("SICZ").value;
+let LOADED = false;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+   
+
+    let CT = 0;
+  for (let I =0; I < image_path.length; I++)
+    {
+      
+      SX[I] = document.getElementById("SX").value;
+      SZ[I] = document.getElementById("SZ").value;
+      
+      CX[I] = document.getElementById("CX").value;
+      CZ[I] = document.getElementById("CZ").value;
+   
+      
+      const image = new Image();
+      
+      image.src = image_path[I]; ///storage/emulated/0/OE.jpeg; // Replace with your image path
+
+    // ctx.fillRect(image_x[I], image_y[I],120,120);
+    
+  
+//Example usage
+const imageUrl = image_path[I];
+const targetElementId = "canvas";
+
+drawImageAsync(ctx, imageUrl, image_x[I], image_y[I], SX[I], SZ[I], CX[I], CZ[I]);
+  
+    ctx.fillStyle = 'black';
+      ctx.fillRect(0,0, ctx.width,ctx.height);
+      //document.getElementById("imgs").appendChild(canvas); // Display the modified image
+
+    ///ctx.putImageData(imageData, 0, 0);
+
+
+    status();
+    }
+    
+    if (CT == image_path.length)
+      {
+        //for (let i =0;i<images.length;i++)
+         /// {
+// }
+          LOADED = true;
+      }
+    
+       document.getElementById("Imgs").innerText = "";
+   
+    
+   /** let K2 = document.getElementById("canvas");
+    // Convert canvas content to data URL and create an image
+const dataURL = canvas.toDataURL('image/png');
+const img3 = new Image();
+img3.data = canvas.data;
+   //document.body.appendChild();
+   
+document.getElementById("Imgs").appendChild(img3);
+**/
+  }
+  
+  function status()
+  {
+    document.getElementById("images").innerText = image_path;
+    document.getElementById("coord_x").innerText = image_x;
+    document.getElementById("coord_y").innerText = image_y;
+    document.getElementById("indice").innerText = indice;
+    
+  }
+  
+  
+  function add_image()
+  {
+    let url = document.getElementById("url").value;
+    image_path.push(url);
+    image_x.push(0);
+    image_y.push(0);
+    
+    let  ISX = document.getElementById("SX").value;
+    let  ISZ = document.getElementById("SZ").value;
+    
+        let  ICX = document.getElementById("CX").value;
+    let  ICZ = document.getElementById("CZ").value;
+    
+    
+    SX.push(ISX);
+    SZ.push(ISZ);
+    CX.push(ICX);
+    CZ.push(ICZ);
+    status();
+    K();
+  }
+  
+  function move_up()
+  {
+    let PV = document.getElementById("PV").value;
+    console.log("pv" + PV);
+    image_y[indice] = image_y[indice] + parseInt(PV);
+    K();
+  }
+  
+  function move_bell()
+  {
+        let PV = document.getElementById("PV").value;
+   
+    image_y[indice] = image_y[indice] -PV;
+    K();
+  }
+  
+  function move_left()
+  {
+        let PV = document.getElementById("PV").value;
+   
+    image_x[indice] = image_x[indice] -PV;
+    K();
+  }
+  
+  function move_rigth()
+  {
+    let PV = document.getElementById("PV").value;
+    image_x[indice] += parseInt(PV);
+    K();
+  }
+  
+  
+  function select_bell()
+  {
+    indice = indice -1;
+    K();
+  }
+  
+  function select_up()
+  {
+    indice = indice +1;
+    K();
+  }
+  
+  function del()
+  {
+      image_path.splice(indice);
+      image_x.splice(indice);
+      image_y.splice(indice);
+  
+      SX.splice(indice);
+      SZ.splice(indice);
+  
+  
+      CX.splice(indice);
+      CZ.splice(indice);
+ 
+  }
+  /**
+  function relMouseCoords(event){
+const rect = canvas.getBoundingClientRect();
+
+ const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+   const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+ const displayX = Math.round(x);
+    const displayY = Math.round(y);
+    return [displayX, displayY];
+}**/
+
+ // let NEW_TOUCH = false;
+  let MUL1 = 0;
+  let COUNT1 = 0;
+  function color(event)
+  {
+    MUL1 = MUL1 * 2;
+    COUNT1 = COUNT1 + 1;
+ //let arr = relMouseCoords(event);
+    
+  /**  const rect = CAN.getBoundingClientRect();
+
+ const scaleX = CAN.width / rect.width;
+    const scaleY = CAN.height / rect.height;
+
+   const x1 = (event.clientX - rect.left) * scaleX;
+    const y1 = (event.clientY - rect.top) * scaleY;
+
+ const displayX = Math.round(x1);
+    const displayY = Math.round(y1);
+    **/
+    /**
+    let x = event.touches[0].clientX;
+    let y = event.touches[0].clientY;
+    **/
+    
+    let canvas = document.getElementById("canvas");
+    let canvas2 = document.getElementById("canvas");
+    const rect = canvas2.getBoundingClientRect();
+
+    let x = (event.touches[0].clientX - rect.left) * ACC;//></COLZ.length;k++)>
+    let y = (event.touches[0].clientY - rect.top) * ACC;
+     //x = (x -30) * 2 
+  //  y = (y-200) * 2;
+    
+//    console.log("EVENTS " + event.touches);
+ //  console.log(x + "  nnbvcch " + y);
+
+    //console.log("V " + x + " " + y);
+    
+    /**
+    console.log("K " + x + " " + y + " " + COLX.length);
+    
+    console.log(COLX);
+    console.log(x + "  and " + y);
+    **/
+    
+    
+            let R = document.getElementById("r").value;
+    let G = document.getElementById("g").value;
+    let B = document.getElementById("b").value;
+    
+    let ALPHA = document.getElementById("alpha").value;
+    
+    let PSX1 = document.getElementById("PSX").value;
+    let PSZ1 = document.getElementById("PSZ").value;
+
+    if (analize)
+    {
+      COLR.pop(R);
+   COLG.pop(G);
+   COLB.pop(B);
+   COLA.pop(ALPHA);
+  
+   COLX.pop(x);
+   COLZ.pop(y);
+   PSX.pop(PSX1);
+    PSZ.pop(PSZ1);
+      
+      
+      COLR.push(R);
+   COLG.push(G);
+   COLB.push(B);
+   COLA.push(ALPHA);
+  
+   COLX.push(x);
+   COLZ.push(y);
+   PSX.push(PSX1);
+    PSZ.push(PSZ1);
+    }
+    
+    else
+    {
+      COLR.push(R);
+   COLG.push(G);
+   COLB.push(B);
+   COLA.push(ALPHA);
+  
+   COLX.push(x);
+   COLZ.push(y);
+   PSX.push(PSX1);
+    PSZ.push(PSZ1);
+    }
+    //console.log("&& " +R+ " " + G);
+     //   console.log("EVENT "+ event.touches.length + " " + MUL1) ;
+     //   console.log(COLX);
+        K();
+  }
+ function OTT(event)
+  {
+    
+    let arr = relMouseCoords(event);
+    let x= arr[0];
+    let y = arr[1];
+    /**
+        let x = event.touches[0].clientX;
+    let y = event.touches[0].clientY;
+   **/
+   // console.log("WA " + x + " " + y);
+  }
+  
+  
+  function COLF()
+  {
+   /**     let x = event.touches[0].clientX;
+    let y = event.touches[0].clientY;
+   **/
+    
+    let x = WX;
+    let y = WY;
+    
+    let R = document.getElementById("r").value;
+    let G = document.getElementById("g").value;
+    let B = document.getElementById("b").value;
+    
+    let ALPHA = document.getElementById("alpha").value;
+    
+   COLR.push(R);
+   COLG.push(G);
+   COLB.push(B);
+   COLA.push(ALPHA);
+  
+   COLX.push(x);
+   COLZ.push(y);
+    
+ //   console.log("K " + x + " " + y);
+    
+  }
+  
+  let SW = 10;
+  
+  function move2_up()
+  {
+    WY = WY + 30;
+    COLF();
+  }
+  
+  function move2_bell()
+  {
+    WY = WY - 30;
+    COLF();
+  }
+  
+  function move2_left()
+  {
+    WX = WX - 30;
+    COLF();
+  }
+  
+  function move2_right()
+  {
+    WX = WX + 30;
+    COLF();
+  }
+  
+  function shootpixel()
+  {
+    let x = document.getElementById("PIXELX").value;
+    let y = document.getElementById("PIXELY").value;
+    
+    
+    let FROM = false;
+    if (x.split(", ").length == 2)
+    {
+      if (y.split(", ").length == 2)
+      {
+       /** x = parseInt(x);
+        y = parseInt(y);**/
+        
+        FROM = true;
+      }
+    }
+   
+        
+            let R = document.getElementById("r").value;
+    let G = document.getElementById("g").value;
+    let B = document.getElementById("b").value;
+    
+    let ALPHA = document.getElementById("alpha").value;
+    
+    
+   // console.log("XY " + x + " " + y);
+   if (FROM == true)
+    {
+      
+      let x1 = x.split(", ")[0];
+      let x2 = x.split(", ")[1];
+      let y1 = x.split(", ")[0];
+      let y2 = x.split(", ")[1];
+     /**
+      console.log(x1);
+      console.log(x2);
+      console.log(y1);
+      console.log(y2);
+      **/
+      for (let i=0;i<x2;i++)
+        {
+          for (let k=0;k<y2;k++)
+            {
+                 COLR.push(R);
+   COLG.push(G);
+   COLB.push(B);
+   COLA.push(ALPHA);
+  
+   COLX.push(x1 + i);
+   COLZ.push(y1 + k);
+              //console.log("XY " + x1 +i + " at " + y1 + k);
+            }
+        }
+    }
+    else
+    {
+   COLR.push(R);
+   COLG.push(G);
+   COLB.push(B);
+   COLA.push(ALPHA);
+  
+   COLX.push(x);
+   COLZ.push(y);
+    }
+    K();
+    
+  }
+  
+   let socket = 0;
+  
+  function connect()
+  {
+
+  }
+
+  
+function pixelate()
+  {
+    let c1 = document.getElementsByClassName("K1")[0];
+    let c2 = document.getElementsByClassName("K2")[0];
+    
+    let W1 = c1.getContext("2d");
+    let W2 = c2.getContext("2d");
+    
+    W1.width = 1000;
+    W2.width = 1000;
+    W2.height = 1000;
+    W2.height = 1000;
+    
+    for (let i=0;i<600;i++)
+      {
+            for (let k=0;k<600;k++)
+      {
+        let RC = RANDC();
+        W1.fillStyle = RC;
+        W1.fillRect(i, k, 1,1);
+        let RC2 = RANDC();
+        W2.fillStyle = RC2;
+        W2.fillRect(i, k, 1,1);
+      }
+      }
+  }
+  
+  
+  
+  let HOST = "ws://localhost:8815";
+
+// let socket;
+  function server()
+  {
+    
+    const socket = new WebSocket(document.getElementById("HOST").value);//ws://url/endpoint');
+    console.log("SERVR");
+
+  //console.log("after");
+  socket.onopen = function(event) {
+  // Connection opened
+  console.log('Connected to WebSocket server');
+  let menssage = "";
+  
+  let ROOM_NAME = document.getElementById("ROOM NAME").value;
+  menssage = menssage + "request";
+  menssage = menssage + "\n";
+  menssage = menssage + "" + ROOM_NAME;
+  menssage = menssage + "\n";
+  menssage = menssage + "none" ;
+
+  let menssage1 = {type: "request", room: ROOM_NAME, content: ""};
+  socket.send(menssage);
+  
+};
+
+    
+socket.onmessage = function(event) {
+  // Message received
+  console.log('Message from server:', event.data);
+  
+  
+  
+  if (true)//vent.data.length > 20)//
+  {
+    let ROOM_NAME = document.getElementById("ROOM NAME").value;
+  let menssage = "";
+    
+    
+    let rec = event.data;
+    
+    
+    let lines = rec.split("\n");
+    
+   // contribute();
+    /**for(let i =0;i<100;i++)
+      {
+        console.log("&& " + lines[0] );
+      }**/
+        let image_path1 = [];
+    let image_x1 = [];
+    let image_y1 = [];
+  
+    let SX1 = [];
+    let SZ1 = [];
+  
+  
+    let CX1 = [];
+    let CZ1 = [];
+  
+  
+    let COLR1 = [];
+    let COLG1 = [];
+    let COLB1 = [];
+    let COLA1 = [];
+  
+    
+    contribute();
+    
+    
+    
+    let COLX1 = [];
+    let COLZ1 = [];
+  image_path = [];
+    image_x = [];
+    image_y = [];
+  
+    SX = [];
+    SZ = [];
+  
+  
+    CX = [];
+    CZ = [];
+  
+  
+   COLR = [];
+   COLG = [];
+   COLB = [];
+   COLA = [];
+  
+    
+    
+  COLX = [];
+  COLZ = [];
+    
+    for (let i = 0; i < lines[0].split(",").length; i++)
+    {
+            let v = lines[0].split(",")[i]; 
+    
+      image_path.push(v);
+    }
+      
+      if (lines[0].split(",").length <= 1)
+      {
+        image_path.push(lines[0]);
+      }
+    
+    
+    for (let i = 0; i < lines[1].split(",").length; i++)
+    {
+            let v = lines[1].split(",")[i]; 
+    
+      image_x.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[2].split(",").length; i++)
+    {
+            let v = lines[2].split(",")[i]; 
+    
+      image_y.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[3].split(",").length; i++)
+    {
+      
+            let v = lines[3].split(",")[i]; 
+    
+      SX.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[4].split(",").length; i++)
+    {
+            let v = lines[4].split(",")[i]; 
+    
+      SZ.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[5].split(",").length; i++)
+    {
+            let v = lines[5].split(",")[i]; 
+    
+      CX.push(parseInt(v));
+    }
+    
+    
+    for (let i = 0; i < lines[6].split(",").length; i++)
+    {
+            let v = lines[6].split(",")[i]; 
+    
+      CZ.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[7].split(",").length; i++)
+    {
+            let v = lines[7].split(",")[i]; 
+    
+      COLR.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[8].split(",").length; i++)
+    {
+            let v = lines[8].split(",")[i]; 
+    
+      COLG.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[9].split(",").length; i++)
+    {
+            let v = lines[9].split(",")[i]; 
+    
+      COLB.push(parseInt(v));
+    }
+    
+    for (let i = 0; i < lines[10].split(",").length; i++)
+    {
+            let v = lines[10].split(",")[i]; 
+    
+      COLA.push(parseInt(v));
+    }
+    
+        for (let i = 0; i < lines[11].split(",").length; i++)
+    {
+            let v = lines[11].split(",")[i]; 
+    
+      COLX.push(parseInt(v));
+    }
+    
+        for (let i = 0; i < lines[12].split(",").length; i++)
+    {
+      let v = lines[12].split(",")[i];
+      COLZ.push(parseInt(v));
+    }
+          
+            for (let i = 0; i < lines[13].split(",").length; i++)
+    {
+      let v = lines[13].split(",")[i];
+      PSX.push(parseInt(v));
+    }
+              
+        for (let i = 0; i < lines[14].split(",").length; i++)
+    {
+      let v = lines[14].split(",")[i];
+      PSZ.push(parseInt(v));
+    }
+    
+    
+
+    
+    //image_path = image_path1;
+    
+  for (let i =0;i<10;i++)
+
+        console.log("0000");
+    console.log("image path " + image_path);
+          console.log(image_x);
+          console.log(image_y);
+          console.log(SX);
+         // console.log(SY);
+          console.log(SZ);
+          console.log(CX);
+          console.log(CZ);
+          console.log(COLR);
+          console.log(COLG);
+          console.log(COLB);
+          console.log(COLA);
+          console.log(COLX);
+          console.log(COLZ);
+          
+          console.log("3nd");
+          //onsole.exit(0);
+    
+  menssage = menssage + "request";
+  menssage = menssage + "\n";
+  menssage = menssage + "" + ROOM_NAME;
+  menssage = menssage + "\n";
+  menssage = menssage + "none" ;
+
+  let menssage1 = {type: "request", room: ROOM_NAME, content: ""};
+  socket.send(menssage);
+         K();
+  }
+};
+
+socket.onclose = function(event) {
+  // Connection closed
+  console.log('Disconnected from WebSocket server');
+};
+
+socket.onerror = function(event) {
+  // Handle errors
+  console.error('WebSocket error:', event);
+};
+  }
+  
+  
+
+  
+  
+  function contribute()
+  {
+    
+              const socket = new WebSocket(document.getElementById("HOST").value);//ws://url/endpoint');
+  //  console.log("SERVR");
+
+ //console.log("after");
+socket.onopen = function(event) {
+  // Connection opened
+  //console.log('Connected to WebSocket server');
+  let menssage = "";
+  
+  let ROOM_NAME = document.getElementById("ROOM NAME").value;
+  menssage = menssage + "send";
+  menssage = menssage + "\n";
+  menssage = menssage + "" + ROOM_NAME;
+  
+  /**
+        let image_path = [];
+  let image_x = [];
+  let image_y = [];
+  
+  let SX = [];
+  let SZ = [];
+  
+  
+  let CX = [];
+  let CZ = [];
+  
+  
+  let COLR = [];
+  let COLG = [];
+  let COLB = [];
+  let COLA = [];
+  
+  let COLX = [];
+  let COLZ = [];
+  **/
+  for (let i=0;i<100;i++)
+    console.log(1);
+  console.log("__ "+ image_path);
+  // console.exit(0);
+  menssage = menssage + "\n";
+  menssage = menssage + image_path;
+  menssage = menssage + "\n";
+  menssage = menssage + image_x;
+  menssage = menssage + "\n";
+  menssage = menssage + image_y;
+  menssage = menssage + "\n";
+  menssage = menssage + SX;
+  menssage = menssage + "\n";
+  menssage = menssage + SZ;
+  menssage = menssage + "\n";
+  menssage = menssage + CX;
+  menssage = menssage + "\n";
+  menssage = menssage + CZ;
+  
+  
+menssage = menssage + "\n";
+  menssage = menssage + COLR;
+menssage = menssage + "\n";
+  menssage = menssage + COLG;
+menssage = menssage + "\n";
+  menssage = menssage + COLB;
+menssage = menssage + "\n";
+  menssage = menssage + COLA;
+
+  menssage = menssage + "\n";
+  menssage = menssage + COLX;
+menssage = menssage + "\n";
+  menssage = menssage + COLZ;
+menssage = menssage + "\n";
+  menssage = menssage + PSX;
+menssage = menssage + "\n";
+  menssage = menssage + PSZ;
+
+  console.log("&& " + menssage);
+  
+  
+  
+  
+  
+  
+
+  let menssage1 = {type: "request", room: ROOM_NAME, content: ""};
+  socket.send(menssage);
+ console.log("sended: " + menssage);
+  socket.close();
+  
+};
+
+    
+socket.onmessage = function(event) {
+  // Message received
+  console.log('Message from server:', event.data);
+  
+  
+  
+  if (true)//vent.data.length > 20)//
+  {
+    let ROOM_NAME = document.getElementById("ROOM NAME").value;
+  let menssage = "";
+  menssage = menssage + "request";
+  menssage = menssage + "\n";
+  menssage = menssage + "" + ROOM_NAME;
+  menssage = menssage + "\n";
+  menssage = menssage + "none" ;
+
+  let menssage1 = {type: "request", room: ROOM_NAME, content: ""};
+  socket.send(menssage);
+  }
+};
+
+socket.onclose = function(event) {
+  // Connection closed
+  console.log('Disconnected from WebSocket server');
+};
+
+socket.onerror = function(event) {
+  // Handle errors
+  console.error('WebSocket error:', event);
+};
+  }  
+  
+ function contrdnibute()
+  {
+    let menssage = "";
+    let ROOM_NAME = document.getElementById("ROOM NAME").value;
+    menssage = menssage + "send";
+    menssage = menssage + "\n";
+    menssage = menssage + "" + ROOM_NAME;
+    menssage = menssage + "\n";
+    menssage = menssage + "ndn" ;
+
+    let menssage1 = {type: "", room: ROOM_NAME, content: ""};
+    socket.send(menssage);
+  
+  }
+  
+   //  const canvas = document.getElementById('yourCanvasId');
+
+// If you want to trigger a download:
+function download() {
+/**  const jpgDataUrl = canvas.toDataURL('image/jpeg', 0.9); // Quality 0.0 - 1.0 (optional)
+
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);**/
+  
+  document.getElementById("Imgs").src = canvas.toDataURL("image/png");
+}
+
+//ownloadImage(jpgDataUrl, 'canvas_image.jpg');
+     
+     function toggle_analizer()
+     {
+       analize = !analize;
+     }
+     
+  pixelate();
+  //connect();
+     
+    function toggle_lock_screen()
+     {
+       LS = !LS;
+       if (LS)
+       {
+         
+         
+        document.getElementById("canvas").setAttribute("style", "touch-action: auto;");
+         //document.getElementById("canvas").style.touchAction = "auto";
+       }
+       else
+       {
+        document.getElementById("canvas").setAttribute("style", "touch-action: none;");
+    
+       }
+     }
+  
+     
+     function next_frame()
+     {
+       next = next +1;
+       let v = document.getDocumentById("FRAME NAME").value;
+       document.getElementById("FRAME NAME").value = v + next;
+     }
+     
+     function before_frame()
+     {
+       next = next-1;
+       let v = document.getDocumentById("FRAME NAME").value;
+       document.getElementById("FRAME NAME").value = v + next;
+   
+     }
+     
+     function future()
+     {
+               for (let i =0;i<sCOLX.length;i++)
+         {
+                      COLX.push(sCOLX[i]);
+           COLZ.push(sCOLZ[i]);
+// COLL.push(sCOLL[i]);
+ COLR.push(sCOLR[i]);
+ COLG.push(sCOLG[i]);
+ //COL.push(sCOLX[COLL.length - 1]);
+ COLA.push(sCOLA[i]);
+ PSX.push(sPSX[i]);
+        PSZ.push(sPSZ[i]);
+        console.log("pushing " + sCOLX[i]);
+         }
+                 saved = [];
+                 K();
+     }
+     document.onkeydown = function (e) {
+    var keyCode = e.keyCode;
+     
+    if(keyCode == "z") {
+erase();
+     }
+    
+    if (keyCode == "x")
+       {
+         future();
+       }
+       
+};
+     
+    </script>
+  
+  
+  <br>
+       <br>
+<input id="HOST" value="ws://localhost:8051">HOST</input>
+  <br>
+  <button onclick="server();">CONNECT</button>
+     
+     <br>
+<input id="url" value="">PATH</input>
+  <br>
+  <input id="PV" value="1">SPEED MOV</input>
+  <br>
+  <input id="SX" value="50">WIDTH</input>
+  <br>
+  <input id="SZ" value="50">HEIGHT</input>
+  <br>
+    <input id="CX" value="50">C WIDTH</input>
+  <br>
+  <input id="CZ" value="50">C HEIGHT</input>
+  <br>
+    
+  <input id="pencil_precission" value="1.0">PINCEL PRECISSION</input>
+
+  <input id="PIXELX" value="120">PIXEL X</input>
+  <br>
+  <input id="PIXELY" value="120">PIXEL Y</input>
+  <br>
+  <button onclick="shootpixel();">SHOOT PIXEL</button>
+ <br>
+  <br>
+ 
+       <input id="SICX" value="9200">OIX</input>
+  <br>
+       <input id="SICZ" value="9200">OIY</input>
+  <br>
+     
+  <input id="r" value="255">r</input>
+  <br>
+  <input id="g" value="0">g</input>
+  <br>
+  <input id="b" value="0">b</input>
+  <br>
+  <input id="alpha" value="255">ALPHA</input>
+  <br>
+     
+    <input id="PSX" value="1">PENCIL SIZE X</input>
+  <br>
+    <input id="PSZ" value="1">PENCIL SIZE Z</input>
+  <br>
+     
+          <input id="erase" value="5">ERASE</input>
+     <br>
+      <button onclick="del();">delete image</button>
+  <br>
+    <button onclick="add_image();">add image</button>
+    <br>
+    <button onclick="erase();">erase</button>
+     
+     <button onclick="future();">future</button>
+  <br>
+    <button onclick="move_bell()">/\</button>
+  
+    <button onclick="move_up()">\/</button>
+  
+  <button onclick="move_left()"><</button>
+      
+      <button onclick="move_rigth()">></button>
+ 
+      <br>
+      
+          <button ontouchmove="move2_up();">/\</button>
+      
+    <button ontouchmove="move2_bell();">\/</button>
+      
+      <button ontouchmove="move2_left();"><</button>
+        
+    <button ontouchmove="move2_right();">></button>
+        <br>
+  <button onclick="select_up();">SU</button>
+        <br>
+        <button onclick="select_bell();">SB</button>
+  <br>
+  
+
+        <br>
+
+            <input id="ROOM NAME" value="RANDOM ROOM">ROOM NAME</input>
+        <br>
+        <button omclick="before_frame();">BEFORE FRAME</button>
+        <button omclick="next_frame();">NEXT FRAME</button>
+        
+        <br>
+                <button onclick="contribute();">CONTRIBUTE</button>
+        <br>
+                <button onclick="download();">DOWNLOAD</button>
+
+          <br>
+                        <button onclick="toggle_analizer();">ANALIZER</button>
+                        <button onclick="toggle_lock_screen();">LOCK SCREEN</button>
+
+        <br>
+  
+        <br>
+    <div id="imgs"></div>
+  <h4>IMAGES:</h4>
+  <div id="images"></div>
+  <div id="coord_x"></div>
+  <div id="coord_y"></div>
+  <div id="indice"></div>
+  <div id="selected"></div>
+</body>
+</html>
